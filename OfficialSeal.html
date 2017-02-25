@@ -1,15 +1,21 @@
 <!DOCTYPE HTML>
-<html lang="ja">
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <!--
        ∧_∧                    ∧_∧
      （:::: ）l|ll  ∧∧       （::: ）l|ll
-     /:::::ヽ      /⌒ヽ)l|ll  /::::ヽ       もうだめぽ･･･
+     /:::::ヽ      /⌒ヽ)l|ll   /::::ヽ       もうだめぽ･･･
     （::::___）  （ ____）    （:::___）
 -->
 <head>
-  <meta charset="UTF-8">
-  <title>電子職員</title>
-  <script>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+
+  <title>電子職印</title>
+  <script type="text/javascript" th:inline="javascript">
+  /*<![CDATA[*/
     onload = function() {
       var color    = "black";
       var homeName = "東京";
@@ -149,15 +155,16 @@
 
       convertImg();
     }
+  /*]]>*/
   </script>
 </head>
 <body>
   <center>
     <!-- canvasはIE、Edgeで画像保存できないようなので非表示属性にした -->
     <canvas id="image" width="103" height="103" hidden="1"></canvas>
-    <img id="convertImage" width="103" height="103">
+    <img id="convertImage" width="103" height="103" />
 
-      <form name="settingForm" action="#">
+    <form name="settingForm" action="#">
       <select name="color">
         <option value="black">黒</option>
         <option value="red">赤</option>
@@ -168,15 +175,17 @@
         <option value="1">YYYY.m.d</option>
       </select>
       <br />
-      <input type="text" name="date" size="10" placeholder="日付">
+
+      <input type="text" name="date" size="10" placeholder="日付" />
       <br />
-      <input type="text" name="homeName" size="10" placeholder="苗字">
+      <input type="text" name="homeName" size="10" placeholder="苗字" />
       <br />
       名前（１文字だけ）を表示する場合はチェックボックスにチェックをして、名前を入力してください。
       <br />
-      <input type="checkbox" name="nameDisp" /><input type="text" name="lastName" size="10" placeholder="名前">
+      <input type="checkbox" name="nameDisp" /><input type="text" name="lastName" size="10" placeholder="名前" />
       <br />
       <input type='button' value='再描画' onclick="reDrow()"/>
+
     </form>
 
   </center>
