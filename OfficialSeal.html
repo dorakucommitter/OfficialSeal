@@ -1,193 +1,222 @@
-<!DOCTYPE HTML>
-<html xmlns="http://www.w3.org/1999/xhtml"
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<!doctype html>
 <!--
        ∧_∧                    ∧_∧
      （:::: ）l|ll  ∧∧       （::: ）l|ll
      /:::::ヽ      /⌒ヽ)l|ll   /::::ヽ       もうだめぽ･･･
     （::::___）  （ ____）    （:::___）
 -->
+<html lang="ja">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <meta http-equiv="Content-Script-Type" content="text/javascript" />
-
-  <title>電子職印</title>
-  <script type="text/javascript" th:inline="javascript">
-  /*<![CDATA[*/
-    onload = function() {
-      var color    = "black";
-      var homeName = "東京";
-      var date = new Date();
-      var datefmt = dateformat(date, 0);
-      var homeNameArr = splitStrByLength(homeName, 1);
-      var lastNameArr = [];
-      drowSeal(datefmt, homeNameArr, 0, false, lastNameArr, color);
-      convertImg();
-
-      document.forms.settingForm.date.value = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate();
-      document.forms.settingForm.homeName.value = homeName;
-    }
-
-    function dateformat(date, formatType) {
-      if(formatType == 0) {
-        var y = date.getFullYear()%100;
-      } else {
-        var y = date.getFullYear();
-      }
-      var m = date.getMonth() + 1;
-      var d = date.getDate();
-
-      if (m < 10) {
-        m = ' ' + m;
-      }
-      if(formatType == 0) {
-        var result = "'" + y + "." + m + "." + d;
-      } else {
-        var result = y + "." + m + "." + d;
-      }
-      return (result);
-    }
-
-    function splitStrByLength(str, length) {
-      var resultArr = [];
-      if (!str || !length || length < 1) {
-        return resultArr;
-      }
-      var index = 0;
-      var start = index;
-      var end = start + length;
-      while (start < str.length) {
-        resultArr[index] = str.substring(start, end);
-        index++;
-        start = end;
-        end = start + length;
-      }
-      return resultArr;
-    }
-
-
-    function drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, color) {
-      var canvas = document.getElementById('image');
-      var ctx = canvas.getContext('2d');
-
-      /* canvasのサイズ取得 */
-      var canvasWidth = canvas.width;
-      var canvasHeight = canvas.width;
-      /* デバッグ用背景
-      ctx.fillStyle = 'rgb(255,0,255)';
-      */
-      ctx.fillStyle = 'rgb(255, 255, 255)';
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      /* フォントスタイル */
-      ctx.font = "16px '游明朝'";
-      /* 職印の色 */
-      if(color == "red") {
-        ctx.strokeStyle = 'rgb(208, 0, 0)';
-      } else {
-        ctx.strokeStyle = '#000';
-      }
-      /* 線・文字の太さ */
-      ctx.lineWidth  = 1;
-
-      /* 職印の描画開始 */
-      ctx.beginPath();
-
-      /* 円を描く */
-      ctx.arc(canvasWidth/2, canvasHeight/2, 48, 0, Math.PI*2, true);
-      /* 直線の描画(上) */
-      ctx.moveTo(canvasWidth/2 - 45, canvasHeight/2 - 15);
-      ctx.lineTo(canvasWidth/2 + 45, canvasHeight/2 - 15);
-      /* 直線の描画(下) */
-      ctx.moveTo(canvasWidth/2 - 44, canvasHeight/2 + 20);
-      ctx.lineTo(canvasWidth/2 + 44, canvasHeight/2 + 20);
-
-      /* 日付 */
-      if(dateFormatType == 0) {
-        ctx.strokeText(datefmt,  canvasWidth/2 - 32, canvasHeight/2 + 8,  canvasWidth - 10);
-      } else {
-        ctx.strokeText(datefmt,  canvasWidth/2 - 38, canvasHeight/2 + 8,  canvasWidth - 10);
-      }
-      /* 名前 */
-      switch(homeNameArr.length) {
-        case 1:
-          ctx.strokeText(homeNameArr[0],  canvasWidth/2 - 8, canvasHeight/2 - 23,  20);
-          break;
-        case 2:
-          ctx.strokeText(homeNameArr[0],  canvasWidth/2 - 8, canvasHeight/2 - 23,  20);
-          ctx.strokeText(homeNameArr[1],  canvasWidth/2 - 8, canvasHeight/2 + 38,  20);
-          if((nameDisp == true) && (lastNameArr.length > 0)) {
-            ctx.font = "10px '游明朝'"
-            ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 10, canvasHeight/2 + 39,  20);
-          }
-          break;
-        default:
-          alert("3文字以上は対応してないです。。。");
-      }
-      /* 職印の描画終了 */
-      ctx.stroke();
-    }
-
-
-    //canvasデータを画像に変換にする関数
-    function convertImg() {
-        var canvas = document.getElementById('image');
-        var png = canvas.toDataURL();
-        document.getElementById("convertImage").src = png;
-    }
-
-    function reDrow() {
-      var color    = document.forms.settingForm.color.value;
-      var homeName = document.forms.settingForm.homeName.value;
-      var lastName = document.forms.settingForm.lastName.value;
-      var nameDisp = document.forms.settingForm.nameDisp.checked;
-
-      var dateFormatType = document.forms.settingForm.dateFormat.value;
-      var date = new Date(document.forms.settingForm.date.value);
-      var datefmt = dateformat(date, dateFormatType);
-
-      var homeNameArr = splitStrByLength(homeName, 1);
-      var lastNameArr = splitStrByLength(lastName, 1);
-      drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, color);
-      //alert(datefmt + homeNameArr[0]);
-
-      convertImg();
-    }
-  /*]]>*/
-  </script>
+  <title>Official Seal</title>
+  <meta charset="UTF-8" />
+  <style>
+  main {
+    width: 150px;
+    margin: 0 auto;
+  }
+  div.seal {
+    width: 90px;
+    margin: 0 auto;
+  }
+  input, select {
+    font-size: 20px;
+  }
+  </style>
 </head>
 <body>
-  <center>
-    <!-- canvasはIE、Edgeで画像保存できないようなので非表示属性にした -->
-    <canvas id="image" width="103" height="103" hidden="1"></canvas>
-    <img id="convertImage" width="103" height="103" />
+  <main>
+    <div class="seal">
+    <canvas id="image" width="80" height="80" hidden="hidden"></canvas>
+    <img id="convertImage" width="80" height="80" />
+    </div>
 
-    <form name="settingForm" action="#">
+    <form name="sealForm" action="#">
+      <input type="date" name="date" size="10" placeholder="日付" />
+      <br />
+      <input type="text" name="homeName" size="10" placeholder="苗字" />
+      <br />
+      <input type="text" name="lastName" size="10" placeholder="名前" />
+      <br />
+      <label><input type="checkbox" name="nameDisp" />名前の表示</label>
+      <br />
+
       <select name="color">
         <option value="black">黒</option>
         <option value="red">赤</option>
       </select>
       <br />
       <select name="dateFormat">
-        <option value="0">&#39;yy.m.d</option>
+      <option value="0">&#39;yy.m.d</option>
         <option value="1">YYYY.m.d</option>
       </select>
       <br />
-
-      <input type="text" name="date" size="10" placeholder="日付" />
-      <br />
-      <input type="text" name="homeName" size="10" placeholder="苗字" />
-      <br />
-      名前（１文字だけ）を表示する場合はチェックボックスにチェックをして、名前を入力してください。
-      <br />
-      <input type="checkbox" name="nameDisp" /><input type="text" name="lastName" size="10" placeholder="名前" />
-      <br />
       <input type='button' value='再描画' onclick="reDrow()"/>
-
     </form>
 
-  </center>
+  </main>
 </body>
+<script>
+<!--
+function dateformat(date, formatType) {
+  if(formatType == 0) {
+    var y = date.getFullYear() % 100;
+  } else {
+    var y = date.getFullYear();
+  }
+  var m = date.getMonth() + 1;
+  var d = date.getDate();
+
+  /* 桁数補正 */
+  if(m < 10) {
+    m = ' ' + m;
+  }
+  if(d < 10) {
+    d = ' ' + d;
+  }
+
+  if(formatType == 0) {
+    var result = "'" + y + "." + m + "." + d;
+  } else {
+    var result = y + "." + m + "." + d;
+  }
+  return (result);
+}
+
+function splitStrByLength(str, length) {
+  var resultArr = [];
+  if (!str || !length || length < 1) {
+    return resultArr;
+  }
+  var index = 0;
+  var start = index;
+  var end = start + length;
+  while (start < str.length) {
+    resultArr[index] = str.substring(start, end);
+    index++;
+    start = end;
+    end = start + length;
+  }
+  return resultArr;
+}
+
+function drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, color) {
+  var canvas = document.getElementById('image');
+  var ctx = canvas.getContext('2d');
+
+  /* canvasのサイズ取得 */
+  var canvasWidth = canvas.width;
+  var canvasHeight = canvas.width;
+  /* デバッグ用背景
+  ctx.fillStyle = 'rgb(255,0,255)';
+  */
+  ctx.fillStyle = 'rgb(255, 255, 255)';
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  /* フォントスタイル */
+  ctx.font = 'normal 100 14px serif';
+  /* 職印の色 */
+  if(color == "red") {
+    ctx.strokeStyle = 'rgb(208, 0, 0)';
+  } else {
+    ctx.strokeStyle = '#000';
+  }
+  /* 線・文字の太さ */
+  ctx.lineWidth  = 1;
+
+  /* 職印の描画開始 */
+  ctx.beginPath();
+
+  /* 円を描く */
+  ctx.arc(canvasWidth/2, canvasHeight/2, 36, 0, Math.PI*2, true);
+  /* 直線の描画(上) */
+  ctx.moveTo(canvasWidth/2 - 34, canvasHeight/2 - 10);
+  ctx.lineTo(canvasWidth/2 + 34, canvasHeight/2 - 10);
+  /* 直線の描画(下) */
+  ctx.moveTo(canvasWidth/2 - 34, canvasHeight/2 + 12);
+  ctx.lineTo(canvasWidth/2 + 34, canvasHeight/2 + 12);
+
+  /* 日付 */
+  if(dateFormatType == 0) {
+    ctx.strokeText(datefmt,  canvasWidth/2 - 27, canvasHeight/2 + 6,  canvasWidth - 20);
+  } else {
+    ctx.strokeText(datefmt,  canvasWidth/2 - 29, canvasHeight/2 + 6,  canvasWidth - 20);
+  }
+  /* 名前 */
+  switch(homeNameArr.length) {
+    case 1:
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 7, canvasHeight/2 - 18,  20);
+      break;
+    case 2:
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 7, canvasHeight/2 - 18, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 7, canvasHeight/2 + 27, 20);
+      if((nameDisp == true) && (lastNameArr.length > 0)) {
+        ctx.font = "normal 100 10px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 8, canvasHeight/2 + 28,  20);
+      }
+      break;
+    default:
+      alert("3文字以上は対応してないです。。。");
+  }
+  /* 職印の描画終了 */
+  ctx.stroke();
+}
+
+
+function reDrow() {
+  var color    = document.forms.sealForm.color.value;
+  var homeName = document.forms.sealForm.homeName.value;
+  var lastName = document.forms.sealForm.lastName.value;
+  var nameDisp = document.forms.sealForm.nameDisp.checked;
+
+  var dateFormatType = document.forms.sealForm.dateFormat.value;
+  var date = new Date(document.forms.sealForm.date.value);
+  var datefmt = dateformat(date, dateFormatType);
+
+  var homeNameArr = splitStrByLength(homeName, 1);
+  var lastNameArr = splitStrByLength(lastName, 1);
+  drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, color);
+  //alert(datefmt + homeNameArr[0]);
+
+  convertImg();
+}
+
+
+/**
+ * canvasデータを画像(png)に変換にする
+ */
+function convertImg() {
+    var canvas = document.getElementById('image');
+    var png = canvas.toDataURL();
+    document.getElementById("convertImage").src = png;
+}
+
+
+onload = function() {
+  var ua = window.navigator.userAgent.toLowerCase();
+  var color    = "black";
+  var homeName = "東京";
+  var lastName = "太郎";
+  var date = new Date();
+  var datefmt = dateformat(date, 0);
+  var homeNameArr = splitStrByLength(homeName, 1);
+  var lastNameArr = splitStrByLength(lastName, 1);
+  drowSeal(datefmt, homeNameArr, 0, false, lastNameArr, color);
+  convertImg();
+
+  if((ua.indexOf('chrome') != -1) || (ua.indexOf('edge') != -1)) {
+    /**
+     * ・input type="date"の初期値は"%04d-%02d-%02d"の初期値にする必要があるらしい。
+     * ・2017年8月6日現在、firefoxはtype="date"に対応していないらしい。
+     */
+    var strmonth = ((date.getMonth() + 1) < 10 ) ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1);
+    var strday = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+    document.forms.sealForm.date.value = date.getFullYear() + "-" + strmonth + "-" + strday;
+  } else {
+    document.forms.sealForm.date.value = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate();
+  }
+  document.forms.sealForm.homeName.value = homeName;
+  document.forms.sealForm.lastName.value = lastName;
+}
+-->
+</script>
 </html>
