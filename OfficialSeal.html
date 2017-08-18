@@ -48,10 +48,7 @@
         <option value="0" selected="selected">&#39;yy.m.d</option>
         <option value="1">YYYY.m.d</option>
       </select>
-      <br />
 
-      <br />
-      <input type='button' id="drow_btn" value='再描画'/>
     </form>
 
     </main>
@@ -363,7 +360,6 @@ window.onload = function() {
   seal.nameDisp.onchange = function() { seal.updateSeal(); };
   seal.color.onchange = function() { seal.updateSeal(); };
   seal.dateFormat.onchange = function() { seal.updateSeal(); };
-  document.getElementById("drow_btn").onclick = function(){ seal.updateSeal(); };
 }
 -->
 </script>
