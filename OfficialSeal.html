@@ -1,42 +1,41 @@
-<!doctype html>
-<!--
-       ∧_∧                    ∧_∧
-     （:::: ）l|ll  ∧∧       （::: ）l|ll
-     /:::::ヽ      /⌒ヽ)l|ll   /::::ヽ       もうだめぽ･･･
-    （::::___）  （ ____）    （:::___）
--->
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <title>Official Seal</title>
   <meta charset="UTF-8" />
+  <title>Official Seal</title>
   <style>
-  main {
-    width: 150px;
-    margin: 0 auto;
-  }
-  div.seal {
-    width: 90px;
-    margin: 0 auto;
-  }
-  input, select {
-    font-size: 20px;
-  }
-  </style>
+    main {
+      width: 150px;
+      margin: 0 auto;
+    }
+    div.seal {
+      width: 90px;
+      margin: 0 auto;
+    }
+    input, select {
+      font-size: 20px;
+    }
+    </style>
 </head>
 <body>
   <main>
     <div class="seal">
-    <canvas id="image" width="80" height="80" hidden="hidden"></canvas>
-    <img id="convertImage" width="80" height="80" />
+      <canvas id="image" width="80" height="80" hidden="hidden"></canvas>
+      <img id="convertImage" width="80" height="80" />
     </div>
 
     <form name="sealForm" action="#">
       <input type="date" name="date" size="10" placeholder="日付" />
       <br />
       <input type="text" name="homeName" size="10" placeholder="苗字" />
+      <select name="valign">
+        <option value="0" selected="selected">上下に配置</option>
+        <option value="1">上寄せ</option>
+        <option value="2">下寄せ</option>
+      </select>
       <br />
+
       <input type="text" name="lastName" size="10" placeholder="名前" />
-      <br />
       <label><input type="checkbox" name="nameDisp" />名前の表示</label>
       <br />
 
@@ -46,19 +45,56 @@
       </select>
       <br />
       <select name="dateFormat">
-      <option value="0">&#39;yy.m.d</option>
+        <option value="0" selected="selected">&#39;yy.m.d</option>
         <option value="1">YYYY.m.d</option>
       </select>
       <br />
-      <input type='button' value='再描画' onclick="reDrow()"/>
+
+      <br />
+      <input type='button' id="drow_btn" value='再描画'/>
     </form>
 
-  </main>
+    </main>
 </body>
 <script>
 <!--
-function dateformat(date, formatType) {
-  if(formatType == 0) {
+'use strict'
+
+/**
+ * ECMAScript6には正式なclassが定義されているが、2017年8月の時点ではドラフト段階
+ * らしいので、prototypeを利用する。
+ */
+var OfficeSeal = function() {};
+
+/* 日付 */
+OfficeSeal.prototype.date = document.forms.sealForm.date;
+/* 日付の表示形式 */
+OfficeSeal.prototype.dateFormat = document.forms.sealForm.dateFormat;
+/* 苗字 */
+OfficeSeal.prototype.homeName = document.forms.sealForm.homeName;
+/* 苗字文字の配置 */
+OfficeSeal.prototype.valign = document.forms.sealForm.valign;
+/* 名前 */
+OfficeSeal.prototype.lastName = document.forms.sealForm.lastName;
+/* 名前の表示 */
+OfficeSeal.prototype.nameDisp = document.forms.sealForm.nameDisp;
+/* 色 */
+OfficeSeal.prototype.color = document.forms.sealForm.color;
+
+/* ユーザエージェント */
+OfficeSeal.prototype.agent = window.navigator.userAgent.toLowerCase();
+/* キャンバス */
+OfficeSeal.prototype.canvas = document.getElementById('image');
+
+
+/**
+ * 職印に印字する日付文字列を生成する。
+ * dateFormat = 0        '07/ 8/31
+ * dateFormat != 0       2017/ 8/31
+ */
+OfficeSeal.prototype.dateformat = function (date)
+{
+  if(this.dateFormat.value == 0) {
     var y = date.getFullYear() % 100;
   } else {
     var y = date.getFullYear();
@@ -74,15 +110,20 @@ function dateformat(date, formatType) {
     d = ' ' + d;
   }
 
-  if(formatType == 0) {
+  if(this.dateFormat.value == 0) {
     var result = "'" + y + "." + m + "." + d;
   } else {
     var result = y + "." + m + "." + d;
   }
   return (result);
-}
+};
 
-function splitStrByLength(str, length) {
+/**
+ * 第一引数で指定された文字列を、第二引数で指定された長さに分割する。
+ * @return array  文字配列
+ */
+OfficeSeal.prototype.splitStrByLength = function(str, length)
+{
   var resultArr = [];
   if (!str || !length || length < 1) {
     return resultArr;
@@ -99,13 +140,17 @@ function splitStrByLength(str, length) {
   return resultArr;
 }
 
-function drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, color) {
-  var canvas = document.getElementById('image');
-  var ctx = canvas.getContext('2d');
+
+/**
+ * 職印を描画する
+ */
+OfficeSeal.prototype.drowSeal = function(date)
+{
+  var ctx = this.canvas.getContext('2d');
 
   /* canvasのサイズ取得 */
-  var canvasWidth = canvas.width;
-  var canvasHeight = canvas.width;
+  var canvasWidth = this.canvas.width;
+  var canvasHeight = this.canvas.width;
   /* デバッグ用背景
   ctx.fillStyle = 'rgb(255,0,255)';
   */
@@ -115,7 +160,7 @@ function drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, c
   /* フォントスタイル */
   ctx.font = 'normal 100 14px serif';
   /* 職印の色 */
-  if(color == "red") {
+  if(this.color.value == "red") {
     ctx.strokeStyle = 'rgb(208, 0, 0)';
   } else {
     ctx.strokeStyle = '#000';
@@ -135,87 +180,190 @@ function drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, c
   ctx.moveTo(canvasWidth/2 - 34, canvasHeight/2 + 12);
   ctx.lineTo(canvasWidth/2 + 34, canvasHeight/2 + 12);
 
-  /* 日付 */
-  if(dateFormatType == 0) {
-    ctx.strokeText(datefmt,  canvasWidth/2 - 27, canvasHeight/2 + 6,  canvasWidth - 20);
+
+  /* 日付の描画 */
+  if(this.dateFormat.value == 0) {
+    ctx.strokeText(this.dateformat(date),  canvasWidth/2 - 27, canvasHeight/2 + 6,  canvasWidth - 20);
   } else {
-    ctx.strokeText(datefmt,  canvasWidth/2 - 29, canvasHeight/2 + 6,  canvasWidth - 20);
+    ctx.strokeText(this.dateformat(date),  canvasWidth/2 - 29, canvasHeight/2 + 6,  canvasWidth - 20);
   }
-  /* 名前 */
+
+
+  /* 指名の描画 */
+  var homeNameArr = this.splitStrByLength(this.homeName.value, 1);
+  var lastNameArr = this.splitStrByLength(this.lastName.value, 1);
   switch(homeNameArr.length) {
-    case 1:
-      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 7, canvasHeight/2 - 18,  20);
-      break;
-    case 2:
-      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 7, canvasHeight/2 - 18, 20);
-      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 7, canvasHeight/2 + 27, 20);
-      if((nameDisp == true) && (lastNameArr.length > 0)) {
-        ctx.font = "normal 100 10px serif"
-        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 8, canvasHeight/2 + 28,  20);
+  case 1:    /* 苗字が1文字 */
+    if ((this.valign.value == 0) || (this.valign.value == 1)) {    /* 上寄せ */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 8, canvasHeight/2 - 17,  20);
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 - 6, canvasHeight/2 + 27,  20);
       }
-      break;
-    default:
-      alert("3文字以上は対応してないです。。。");
+    } else if (this.valign.value == 2) {    /* 下寄せ */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 8, canvasHeight/2 + 27, 20);
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 7, canvasHeight/2 + 27,  20);
+      }
+    }
+    break;
+
+  case 2:    /* 苗字が2文字 */
+    if (this.valign.value == 0) {    /* 上下に配置 */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 8, canvasHeight/2 - 17, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 8, canvasHeight/2 + 27, 20);
+
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 7, canvasHeight/2 + 27,  20);
+      }
+    } else if (this.valign.value == 1) {    /* 上寄せ */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 15, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 + 3, canvasHeight/2 - 15, 20);
+
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 - 6, canvasHeight/2 + 27,  20);
+      }
+    } else if (this.valign.value == 2) {    /* 下寄せ */
+      if(this.nameDisp.checked == false) {
+        ctx.strokeText(homeNameArr[0], canvasWidth/2 - 15, canvasHeight/2 + 27, 20);
+        ctx.strokeText(homeNameArr[1], canvasWidth/2 + 3, canvasHeight/2 + 27, 20);
+      } else if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.strokeText(homeNameArr[0], canvasWidth/2 - 20, canvasHeight/2 + 27, 20);
+        ctx.strokeText(homeNameArr[1], canvasWidth/2-5, canvasHeight/2 + 27, 20);
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 10, canvasHeight/2 + 27,  20);
+      }
+    }
+    break;
+
+  case 3:    /* 苗字が3文字 */
+    if (this.valign.value == 0) {    /* 上下に配置 */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 16, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 + 5, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[2], canvasWidth/2 - 9, canvasHeight/2 + 27, 20);
+
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 7, canvasHeight/2 + 27,  20);
+      }
+    } else if (this.valign.value == 1) {    /* 上寄せ */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 22, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 6, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[2], canvasWidth/2 + 10, canvasHeight/2 - 15, 20);
+
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "12px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 - 6, canvasHeight/2 + 27,  20);
+      }
+    } else if (this.valign.value == 2) {    /* 下寄せ */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 22, canvasHeight/2 + 27, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 6, canvasHeight/2 + 27, 20);
+      ctx.strokeText(homeNameArr[2], canvasWidth/2 + 10, canvasHeight/2 + 27, 20);
+
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "11px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 28, canvasHeight/2 + 30,  20);
+      }
+    }
+    break;
+  case 4:    /* 苗字が4文字 */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 15, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 + 3, canvasHeight/2 - 15, 20);
+      if(this.nameDisp.checked == false) {
+        ctx.strokeText(homeNameArr[2], canvasWidth/2 - 15, canvasHeight/2 + 27, 20);
+        ctx.strokeText(homeNameArr[3], canvasWidth/2 + 3, canvasHeight/2 + 27, 20);
+      } else if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.strokeText(homeNameArr[2], canvasWidth/2 - 20, canvasHeight/2 + 27, 20);
+        ctx.strokeText(homeNameArr[3], canvasWidth/2-5, canvasHeight/2 + 27, 20);
+        ctx.font = "11px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 10, canvasHeight/2 + 27,  20);
+      }
+    break;
+
+  case 5:    /* 苗字が5文字 */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 22, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 6, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[2], canvasWidth/2 + 10, canvasHeight/2 - 15, 20);
+      if(this.nameDisp.checked == false) {
+        ctx.strokeText(homeNameArr[3], canvasWidth/2 - 15, canvasHeight/2 + 27, 20);
+        ctx.strokeText(homeNameArr[4], canvasWidth/2 + 3, canvasHeight/2 + 27, 20);
+      } else if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.strokeText(homeNameArr[3], canvasWidth/2 - 20, canvasHeight/2 + 27, 20);
+        ctx.strokeText(homeNameArr[4], canvasWidth/2-5, canvasHeight/2 + 27, 20);
+        ctx.font = "11px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 10, canvasHeight/2 + 27,  20);
+      }
+    break;
+
+  case 6:    /* 苗字が6文字 */
+      ctx.strokeText(homeNameArr[0], canvasWidth/2 - 22, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[1], canvasWidth/2 - 6, canvasHeight/2 - 15, 20);
+      ctx.strokeText(homeNameArr[2], canvasWidth/2 + 10, canvasHeight/2 - 15, 20);
+
+      ctx.strokeText(homeNameArr[3], canvasWidth/2 - 22, canvasHeight/2 + 27, 20);
+      ctx.strokeText(homeNameArr[4], canvasWidth/2 - 6, canvasHeight/2 + 27, 20);
+      ctx.strokeText(homeNameArr[5], canvasWidth/2 + 10, canvasHeight/2 + 27, 20);
+
+      if((this.nameDisp.checked == true) && (lastNameArr.length > 0)) {
+        ctx.font = "11px serif"
+        ctx.strokeText(lastNameArr[0],  canvasWidth/2 + 28, canvasHeight/2 + 30,  20);
+      }
+    break;
+
+  default:
+    alert("苗字が7文字以上は対応していませんです。");
   }
+
+
   /* 職印の描画終了 */
   ctx.stroke();
-}
+
+  /* canvas⇒png変換 */
+  document.getElementById("convertImage").src = this.canvas.toDataURL();
 
 
-function reDrow() {
-  var color    = document.forms.sealForm.color.value;
-  var homeName = document.forms.sealForm.homeName.value;
-  var lastName = document.forms.sealForm.lastName.value;
-  var nameDisp = document.forms.sealForm.nameDisp.checked;
-
-  var dateFormatType = document.forms.sealForm.dateFormat.value;
-  var date = new Date(document.forms.sealForm.date.value);
-  var datefmt = dateformat(date, dateFormatType);
-
-  var homeNameArr = splitStrByLength(homeName, 1);
-  var lastNameArr = splitStrByLength(lastName, 1);
-  drowSeal(datefmt, homeNameArr, dateFormatType, nameDisp, lastNameArr, color);
-  //alert(datefmt + homeNameArr[0]);
-
-  convertImg();
-}
-
-
-/**
- * canvasデータを画像(png)に変換にする
- */
-function convertImg() {
-    var canvas = document.getElementById('image');
-    var png = canvas.toDataURL();
-    document.getElementById("convertImage").src = png;
-}
-
-
-onload = function() {
-  var ua = window.navigator.userAgent.toLowerCase();
-  var color    = "black";
-  var homeName = "東京";
-  var lastName = "太郎";
-  var date = new Date();
-  var datefmt = dateformat(date, 0);
-  var homeNameArr = splitStrByLength(homeName, 1);
-  var lastNameArr = splitStrByLength(lastName, 1);
-  drowSeal(datefmt, homeNameArr, 0, false, lastNameArr, color);
-  convertImg();
-
-  if((ua.indexOf('chrome') != -1) || (ua.indexOf('edge') != -1)) {
+  if((this.agent.indexOf('chrome') != -1) || (this.agent.indexOf('edge') != -1)) {
     /**
      * ・input type="date"の初期値は"%04d-%02d-%02d"の初期値にする必要があるらしい。
      * ・2017年8月6日現在、firefoxはtype="date"に対応していないらしい。
      */
     var strmonth = ((date.getMonth() + 1) < 10 ) ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1);
     var strday = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-    document.forms.sealForm.date.value = date.getFullYear() + "-" + strmonth + "-" + strday;
+    this.date.value = date.getFullYear() + "-" + strmonth + "-" + strday;
   } else {
-    document.forms.sealForm.date.value = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate();
+    this.date.value = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate();
   }
-  document.forms.sealForm.homeName.value = homeName;
-  document.forms.sealForm.lastName.value = lastName;
+}
+
+
+/**
+ * 職印を再描画する
+ */
+OfficeSeal.prototype.updateSeal = function()
+{
+  var seal2 = new OfficeSeal();
+  seal2.drowSeal(new Date(this.date.value));
+}
+
+window.onload = function() {
+  var seal = new OfficeSeal();
+  seal.homeName.value = "東京";
+  seal.lastName.value = "太郎";
+  seal.drowSeal(new Date());
+
+  seal.date.onchange = function() { seal.updateSeal(); };
+  seal.homeName.onchange = function() { seal.updateSeal(); };
+  seal.valign.onchange = function() { seal.updateSeal(); };
+
+  /* TODO: 名前の変更は表示チェックボックスとセットの方がいいかも */
+  seal.lastName.onchange = function() { seal.updateSeal(); };
+  seal.nameDisp.onchange = function() { seal.updateSeal(); };
+  seal.color.onchange = function() { seal.updateSeal(); };
+  seal.dateFormat.onchange = function() { seal.updateSeal(); };
+  document.getElementById("drow_btn").onclick = function(){ seal.updateSeal(); };
 }
 -->
 </script>
